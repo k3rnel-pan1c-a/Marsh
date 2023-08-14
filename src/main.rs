@@ -1,10 +1,10 @@
 use std::{io, io::Write, str::FromStr, env, path::Path};
-use std::process::Command as cmd;
+use std::process::Command;
 
 
 const PROMPT_CHAR: &str = "->";
 
-struct Command {
+struct Cmd {
     keyword: String,
     args: Vec<String>,
 }
@@ -54,18 +54,18 @@ fn read_cmd() -> String {
     cmd
 }
 
-fn tokenize_cmd(cmd: String) -> Command {
+fn tokenize_cmd(cmd: String) -> Cmd {
     let mut cmd_args: Vec<String> = cmd
         .split_whitespace()
         .map(|item| item.to_string())
         .collect();
-    Command {
+    Cmd {
         keyword: cmd_args.remove(0),
         args: cmd_args,
     }
 }
 
-fn process_cmd(cmd: Command) -> () {
+fn process_cmd(cmd: Cmd) -> () {
     match Builtin::from_str(&*cmd.keyword){
         Ok(Builtin::Echo) => {
             builtin_echo(cmd.args)
@@ -103,8 +103,8 @@ fn builtin_pwd(args: Vec<String>){
     let cwd = env::current_dir().unwrap();
     println!("{:?}", cwd);
 }
-fn external_cmd(cmd: Command){
-    let output = cmd::new(cmd.keyword).args(cmd.args).output().expect("TODO");
+fn external_cmd(cmd: Cmd){
+    let output = Command::new(cmd.keyword).args(cmd.args).output().expect("TODO");
     print!("{}", String::from_utf8_lossy(&output.stdout));
     io::stdout().flush().unwrap();
 
