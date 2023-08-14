@@ -29,7 +29,7 @@ impl FromStr for Builtin{
 
 fn main() {
     //cd to the root directory on start
-    let root = Path::new("/");
+    let root = Path::new("/Users/anasbadr");
     env::set_current_dir(&root).expect("root '/' doesn't exist");
 
     //since shells are REPL, then we'll have an infinite loop
@@ -89,7 +89,7 @@ fn builtin_cd(args: Vec<String>){
     let mut path = String::from("");
     args.iter().for_each(|item| path+= item);
     let path = Path::new(path.as_str());
-    env::set_current_dir(path).expect("specified path doesn't exist");
+    env::set_current_dir(&path).expect("specified path doesn't exist");
 }
 
 fn builtin_pwd(args: Vec<String>){
