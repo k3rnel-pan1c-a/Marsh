@@ -1,6 +1,5 @@
-use std::io;
-use std::io::Write;
-use std::str::FromStr;
+use std::{io, io::Write, str::FromStr, env, path::Path};
+
 
 const PROMPT_CHAR: &str = "->";
 
@@ -23,16 +22,21 @@ impl FromStr for Builtin{
             "echo" => Ok(Builtin::Echo),
             "pwd" => Ok(Builtin::Pwd),
             "cd" => Ok(Builtin::Cd),
-            _ => {}
+            _ => {Err(()) }
         }
     }
 }
 
 fn main() {
+    //cd to the root directory on start
+    let root = Path::new("/");
+    env::set_current_dir(&root).expect("root '/' doesn't exist");
+
     //since shells are REPL, then we'll have an infinite loop
     loop {
         print_prompt_char();
-        let cmd = parse_cmd(read_cmd());
+        let cmd = tokenize_cmd(read_cmd());
+        process_cmd(cmd)
     }
 }
 
@@ -60,17 +64,39 @@ fn tokenize_cmd(cmd: String) -> Command {
     }
 }
 
-fn process_cmd(cmd: String) -> () {
-    match Builtin::from_str(&cmd){
+fn process_cmd(cmd: Command) -> () {
+    match Builtin::from_str(&*cmd.keyword){
         Ok(Builtin::Echo) => {
-            todo!()
+            builtin_echo(cmd.args)
         }
         Ok(Builtin::Cd) => {
-            todo!()
+            builtin_cd(cmd.args)
         }
         Ok(Builtin::Pwd) => {
-            todo!()
+            builtin_pwd(cmd.args)
         }
         Err(_) => {}
     }
+}
+
+fn builtin_echo(args: Vec<String>) ->() {
+    let mut line = String::from("");
+    args.iter().for_each(|item| line += item);
+    println!("{}", line);
+}
+
+fn builtin_cd(args: Vec<String>){
+    let mut path = String::from("");
+    args.iter().for_each(|item| path+= item);
+    let path = Path::new(path.as_str());
+    env::set_current_dir(path).expect("specified path doesn't exist");
+}
+
+fn builtin_pwd(args: Vec<String>){
+    //Need to use a Result enum here to not exit
+    if args.len() > 0{
+        panic!("Too many arguments")
+    };
+    let cwd = env::current_dir().unwrap();
+    println!("{:?}", cwd);
 }
