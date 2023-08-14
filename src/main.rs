@@ -1,4 +1,5 @@
 use std::{io, io::Write, str::FromStr, env, path::Path};
+use std::process::Command as cmd;
 
 
 const PROMPT_CHAR: &str = "->";
@@ -16,8 +17,8 @@ enum Builtin{
 
 impl FromStr for Builtin{
     type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    // check if the passed command is a built-in
+    fn from_str(s: &str) -> Result<Self, ()> {
         match s{
             "echo" => Ok(Builtin::Echo),
             "pwd" => Ok(Builtin::Pwd),
@@ -75,7 +76,9 @@ fn process_cmd(cmd: Command) -> () {
         Ok(Builtin::Pwd) => {
             builtin_pwd(cmd.args)
         }
-        Err(_) => {}
+        Err(_) => {
+            external_cmd(cmd);
+        }
     }
 }
 
@@ -99,4 +102,10 @@ fn builtin_pwd(args: Vec<String>){
     };
     let cwd = env::current_dir().unwrap();
     println!("{:?}", cwd);
+}
+fn external_cmd(cmd: Command){
+    let output = cmd::new(cmd.keyword).args(cmd.args).output().expect("TODO");
+    print!("{}", String::from_utf8_lossy(&output.stdout));
+    io::stdout().flush().unwrap();
+
 }
