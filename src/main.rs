@@ -1,5 +1,8 @@
+mod builtins;
+
+use builtins::*;
 use std::process::Command;
-use std::{env, io, io::Write, path::Path, str::FromStr};
+use std::{env, fs, io, io::Write, path::Path, str::FromStr};
 
 const PROMPT_CHAR: &str = "->";
 const ROOT: &str = "/Users/anasbadr";
@@ -29,6 +32,8 @@ impl FromStr for Builtin {
 }
 
 fn main() {
+    //read the environment variables
+    read_env();
     //need to add a fn to read a dotfile
     //cd to the root directory on start
     let root = Path::new(ROOT);
@@ -77,37 +82,6 @@ fn process_cmd(cmd: Cmd) -> () {
     }
 }
 
-fn builtin_echo(args: Vec<String>) -> () {
-    let mut line = String::from("");
-    args.iter().for_each(|item| line += item);
-    println!("{}", line);
-}
-
-fn builtin_cd(args: Vec<String>) {
-    if args.len() == 0 {
-        let root = Path::new(ROOT);
-        env::set_current_dir(&root).expect("root '/Users/anasbadr' doesn't exist");
-    }
-    else if args[0] == "..".to_string(){
-        todo!()
-    }
-    else {
-        let mut path = String::from("");
-        args.iter().for_each(|item| path += item);
-        let path = Path::new(path.as_str());
-        env::set_current_dir(&path).expect("specified path doesn't exist");
-    }
-
-}
-
-fn builtin_pwd(args: Vec<String>) {
-    //Need to use a Result enum here to not exit
-    if args.len() > 0 {
-        panic!("Too many arguments")
-    };
-    let cwd = env::current_dir().unwrap();
-    println!("{:?}", cwd);
-}
 fn external_cmd(cmd: Cmd) {
     let output = Command::new(cmd.keyword)
         .args(cmd.args)
@@ -117,4 +91,20 @@ fn external_cmd(cmd: Cmd) {
     //to convert to a String object
     print!("{}", String::from_utf8_lossy(&output.stdout));
     io::stdout().flush().unwrap();
+}
+
+fn read_env() {
+    for line in fs::read_to_string("src/.marshenv")
+        .unwrap_or(String::from("reading file failed"))
+        .lines()
+    {
+        //read exports
+        if let Some(export) = line.strip_prefix("export ") {
+            if let Some((key, value)) = export.split_once('=') {
+                //set environment variables
+                env::set_var(key.trim(), value.trim());
+            }
+        }
+
+    }
 }
