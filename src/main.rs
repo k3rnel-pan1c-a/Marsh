@@ -5,7 +5,7 @@ use std::process::Command;
 use std::{env, fs, io, io::Write, path::Path, str::FromStr};
 
 const PROMPT_CHAR: &str = "->";
-const ROOT: &str = "/Users/anasbadr";
+const HOME: &str = "/Users/anasbadr";
 
 struct Cmd {
     keyword: String,
@@ -36,8 +36,8 @@ fn main() {
     read_env();
     //need to add a fn to read a dotfile
     //cd to the root directory on start
-    let root = Path::new(ROOT);
-    env::set_current_dir(&root).expect("root '/Users/anasbadr' doesn't exist");
+    let root = Path::new(HOME);
+    env::set_current_dir(&root).expect("'/Users/anasbadr' doesn't exist");
 
     //since shells are REPL, then we'll have an infinite loop
     loop {
