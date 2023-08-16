@@ -1,6 +1,6 @@
-use crate::HOME;
 use std::env;
 use std::path::Path;
+use crate::HOME;
 
 pub fn builtin_echo(args: Vec<String>) -> () {
     //add the option to echo env_var

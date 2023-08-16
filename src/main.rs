@@ -1,7 +1,7 @@
 mod builtins;
 
 use builtins::*;
-use std::process::Command;
+use std::process::{Command, Output};
 use std::{env, fs, io, io::Write, path::Path, str::FromStr};
 
 const PROMPT_CHAR: &str = "->";
@@ -61,14 +61,24 @@ fn read_cmd() -> String {
 }
 
 fn tokenize_cmd(cmd: String) -> Cmd {
-    let mut cmd_args: Vec<String> = cmd
-        .split_whitespace()
-        .map(|item| item.to_string())
-        .collect();
-    Cmd {
-        keyword: cmd_args.remove(0),
-        args: cmd_args,
+    if cmd.contains("|"){
+        let mut cmd_args: Vec<String> = cmd.split("|")
+            .map(|item| item.to_string())
+            .collect();
+        //I need to take the result of the first command and use it with the next one
+        tokenize_cmd(cmd_args[0])
+    };
+    else {
+        let mut cmd_args: Vec<String> = cmd
+            .split_whitespace()
+            .map(|item| item.to_string())
+            .collect();
+        Cmd {
+            keyword: cmd_args.remove(0),
+            args: cmd_args,
+        }
     }
+
 }
 
 fn process_cmd(cmd: Cmd) -> () {
@@ -82,7 +92,7 @@ fn process_cmd(cmd: Cmd) -> () {
     }
 }
 
-fn external_cmd(cmd: Cmd) {
+fn external_cmd(cmd: Cmd)  -> Output{
     let output = Command::new(cmd.keyword)
         .args(cmd.args)
         .output()
@@ -91,6 +101,7 @@ fn external_cmd(cmd: Cmd) {
     //to convert to a String object
     print!("{}", String::from_utf8_lossy(&output.stdout));
     io::stdout().flush().unwrap();
+    Output
 }
 
 fn read_env() {
@@ -108,3 +119,5 @@ fn read_env() {
 
     }
 }
+
+fn piping(cmd_args: Vec<String>) {}
