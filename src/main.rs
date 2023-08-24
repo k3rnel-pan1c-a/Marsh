@@ -5,8 +5,6 @@ use std::process::{Command, Output};
 use std::{env, fs, io, io::Write, path::Path, str::FromStr};
 
 const PROMPT_CHAR: &str = "->";
-const HOME: &str = "/Users/anasbadr";
-
 struct Cmd {
     keyword: String,
     args: Vec<String>,
@@ -17,7 +15,6 @@ enum Builtin {
     Pwd,
     Echo,
 }
-
 impl FromStr for Builtin {
     type Err = ();
     // check if the passed command is a built-in
@@ -33,10 +30,9 @@ impl FromStr for Builtin {
 
 fn main() {
     //read the environment variables
-    read_env();
     //need to add a fn to read a dotfile
     //cd to the root directory on start
-    let root = Path::new(HOME);
+    let root = Path::new(env::var("HOME").unwrap().as_str());
     env::set_current_dir(&root).expect("'/Users/anasbadr' doesn't exist");
 
     //since shells are REPL, then we'll have an infinite loop
@@ -61,22 +57,21 @@ fn read_cmd() -> String {
 }
 
 fn tokenize_cmd(cmd: String) -> Cmd {
-    if cmd.contains("|"){
-        let mut cmd_args: Vec<String> = cmd.split("|")
-            .map(|item| item.to_string())
-            .collect();
-        //I need to take the result of the first command and use it with the next one
-        tokenize_cmd(cmd_args[0])
-    };
-    else {
-        let mut cmd_args: Vec<String> = cmd
-            .split_whitespace()
-            .map(|item| item.to_string())
-            .collect();
-        Cmd {
-            keyword: cmd_args.remove(0),
-            args: cmd_args,
-        }
+    // if cmd.contains("|"){
+    //     let mut cmd_args: Vec<String> = cmd.split("|")
+    //         .map(|item| item.to_string())
+    //         .collect();
+    //     //I need to take the result of the first command and use it with the next one
+    //     tokenize_cmd(cmd_args[0])
+    // }
+
+    let mut cmd_args: Vec<String> = cmd
+        .split_whitespace()
+        .map(|item| item.to_string())
+        .collect();
+    Cmd {
+        keyword: cmd_args.remove(0),
+        args: cmd_args,
     }
 
 }
@@ -101,23 +96,7 @@ fn external_cmd(cmd: Cmd)  -> Output{
     //to convert to a String object
     print!("{}", String::from_utf8_lossy(&output.stdout));
     io::stdout().flush().unwrap();
-    Output
-}
-
-fn read_env() {
-    for line in fs::read_to_string("src/.marshenv")
-        .unwrap_or(String::from("reading file failed"))
-        .lines()
-    {
-        //read exports
-        if let Some(export) = line.strip_prefix("export ") {
-            if let Some((key, value)) = export.split_once('=') {
-                //set environment variables
-                env::set_var(key.trim(), value.trim());
-            }
-        }
-
-    }
+    output
 }
 
 fn piping(cmd_args: Vec<String>) {}
