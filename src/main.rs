@@ -2,7 +2,7 @@ mod builtins;
 
 use builtins::*;
 use std::process::{Command, Output};
-use std::{env, fs, io, io::Write, path::Path, str::FromStr};
+use std::{env, io, io::Write, path::Path, str::FromStr};
 
 const PROMPT_CHAR: &str = "->";
 struct Cmd {
@@ -29,11 +29,12 @@ impl FromStr for Builtin {
 }
 
 fn main() {
+    let home_dir: String = env::var("HOME").unwrap();
     //read the environment variables
     //need to add a fn to read a dotfile
     //cd to the root directory on start
-    let root = Path::new(env::var("HOME").unwrap().as_str());
-    env::set_current_dir(&root).expect("'/Users/anasbadr' doesn't exist");
+    let root = Path::new(home_dir.as_str());
+    env::set_current_dir(&root).expect(format!("{home_dir} doesn't exist").as_str());
 
     //since shells are REPL, then we'll have an infinite loop
     loop {
@@ -57,6 +58,26 @@ fn read_cmd() -> String {
 }
 
 fn tokenize_cmd(cmd: String) -> Cmd {
+    if cmd.contains("|"){
+        let mut iterator = cmd.split("|")
+            .map(|item| item.to_string());
+        let first_cmd = iterator.next().unwrap();
+        let second_cmd = iterator.next().unwrap();
+
+        let output = process_cmd(tokenize_cmd(first_cmd));
+        tokenize_cmd(second_cmd + " " + &*String::from_utf8_lossy(&output.stdout))
+
+    }
+    else{
+        let mut cmd_args: Vec<String> = cmd
+            .split_whitespace()
+            .map(|item| item.to_string())
+            .collect();
+        Cmd {
+            keyword: cmd_args.remove(0),
+            args: cmd_args,
+        }
+    }
     // if cmd.contains("|"){
     //     let mut cmd_args: Vec<String> = cmd.split("|")
     //         .map(|item| item.to_string())
@@ -65,17 +86,9 @@ fn tokenize_cmd(cmd: String) -> Cmd {
     //     tokenize_cmd(cmd_args[0])
     // }
 
-    let mut cmd_args: Vec<String> = cmd
-        .split_whitespace()
-        .map(|item| item.to_string())
-        .collect();
-    Cmd {
-        keyword: cmd_args.remove(0),
-        args: cmd_args,
-    }
+
 
 }
-
 fn process_cmd(cmd: Cmd) -> () {
     match Builtin::from_str(&*cmd.keyword) {
         Ok(Builtin::Echo) => builtin_echo(cmd.args),
@@ -98,5 +111,3 @@ fn external_cmd(cmd: Cmd)  -> Output{
     io::stdout().flush().unwrap();
     output
 }
-
-fn piping(cmd_args: Vec<String>) {}
