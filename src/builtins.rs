@@ -1,6 +1,7 @@
 use std::env;
 use std::path::Path;
 
+
 pub fn builtin_echo(args: Vec<String>) -> () {
     //add the option to echo env_var
     if args.len() == 1{
@@ -17,10 +18,11 @@ pub fn builtin_echo(args: Vec<String>) -> () {
 }
 
 pub fn builtin_cd(args: Vec<String>) {
+    let home_dir: String = env::var("HOME").unwrap();
     //add the .. thingy
     if args.len() == 0 {
-        let root = Path::new(env::var("HOME").unwrap().as_str());
-        env::set_current_dir(&root).expect("root '/Users/anasbadr' doesn't exist");
+        let root = Path::new(home_dir.as_str());
+        env::set_current_dir(&root).expect(format!("{home_dir} doesn't exist").as_str());
     } else if args[0] == "..".to_string() {
         todo!()
     } else {
