@@ -8,6 +8,7 @@ const PROMPT_CHAR: &str = "->";
 struct Cmd {
     keyword: String,
     args: Vec<String>,
+    builtin: Option<Builtin>,
 }
 
 enum Builtin {
@@ -40,7 +41,6 @@ fn main() {
     loop {
         print_prompt_char();
         let cmd = tokenize_cmd(read_cmd());
-        process_cmd(cmd)
     }
 }
 
@@ -57,15 +57,14 @@ fn read_cmd() -> String {
     cmd
 }
 
-fn tokenize_cmd(cmd: String) -> Cmd {
+fn tokenize_cmd(cmd: String) -> Vec<String> {
     if cmd.contains("|"){
-        let mut iterator = cmd.split("|")
-            .map(|item| item.to_string());
-        let first_cmd = iterator.next().unwrap();
-        let second_cmd = iterator.next().unwrap();
 
-        let output = process_cmd(tokenize_cmd(first_cmd));
-        tokenize_cmd(second_cmd + " " + &*String::from_utf8_lossy(&output.stdout))
+        let mut iterator = cmd.split("|")
+            .map(|slice| slice.to_string());
+
+        let first_cmd_output = pipe(parse_cmd( tokenize_cmd(iterator.next().unwrap())));
+        tokenize_cmd(iterator.next().unwrap() + &*first_cmd_output)
 
     }
     else{
@@ -73,31 +72,33 @@ fn tokenize_cmd(cmd: String) -> Cmd {
             .split_whitespace()
             .map(|item| item.to_string())
             .collect();
+        cmd_args
+    }
+}
+
+fn parse_cmd(mut cmd_args: Vec<String>) -> Cmd{
+    let mut cmd: Cmd =
         Cmd {
             keyword: cmd_args.remove(0),
             args: cmd_args,
-        }
-    }
-    // if cmd.contains("|"){
-    //     let mut cmd_args: Vec<String> = cmd.split("|")
-    //         .map(|item| item.to_string())
-    //         .collect();
-    //     //I need to take the result of the first command and use it with the next one
-    //     tokenize_cmd(cmd_args[0])
-    // }
-
-
-
-}
-fn process_cmd(cmd: Cmd) -> () {
+            builtin: None,
+        };
     match Builtin::from_str(&*cmd.keyword) {
-        Ok(Builtin::Echo) => builtin_echo(cmd.args),
-        Ok(Builtin::Cd) => builtin_cd(cmd.args),
-        Ok(Builtin::Pwd) => builtin_pwd(cmd.args),
+        Ok(Builtin::Echo) => {
+            cmd.builtin = Some(Builtin::Echo)
+        },
+        Ok(Builtin::Cd) => {
+            cmd.builtin = Some(Builtin::Cd)
+        },
+        Ok(Builtin::Pwd) => {
+            cmd.builtin = Some(Builtin::Pwd)
+        },
         Err(_) => {
-            external_cmd(cmd);
+            cmd.builtin = None
         }
+
     }
+    cmd
 }
 
 fn external_cmd(cmd: Cmd)  -> Output{
@@ -110,4 +111,8 @@ fn external_cmd(cmd: Cmd)  -> Output{
     print!("{}", String::from_utf8_lossy(&output.stdout));
     io::stdout().flush().unwrap();
     output
+}
+fn pipe(first_cmd: Cmd) -> String{
+    //piping process the first command and returns the output to be used as an arg for the second command
+    String::from_utf8_lossy(&*external_cmd(first_cmd).stdout).parse().unwrap()
 }
