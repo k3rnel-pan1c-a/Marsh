@@ -1,11 +1,10 @@
 use std::env;
 use std::path::Path;
 
-
 pub fn builtin_echo(args: Vec<String>) -> () {
     //add the option to echo env_var
-    if args.len() == 1{
-        if let Some(env_var) = args.get(0).unwrap().as_str().strip_prefix("$"){
+    if args.len() == 1 {
+        if let Some(env_var) = args.get(0).unwrap().as_str().strip_prefix("$") {
             match env::var(env_var.trim()) {
                 Ok(value) => println!("Value of env_var: {}", value),
                 Err(_) => println!("env_var is not set"),
