@@ -9,6 +9,7 @@ pub fn builtin_echo(args: Vec<String>) -> () {
                 Ok(value) => println!("Value of env_var: {}", value),
                 Err(_) => println!("env_var is not set"),
             }
+            return;
         }
     }
     let mut line = String::from("");
