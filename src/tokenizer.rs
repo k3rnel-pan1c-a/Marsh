@@ -1,6 +1,6 @@
 use crate::parser::parse_cmd;
-use crate::{parser, pipe, Cmd};
-use std::process::{Child, Output};
+use std::process::Child;
+use marsh::{Cmd, pipe};
 
 pub fn tokenize_cmd(cmd: String) -> (Vec<String>, Option<Child>) {
     if cmd.contains("|") {
