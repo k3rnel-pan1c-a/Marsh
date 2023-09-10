@@ -11,6 +11,7 @@ pub fn parse_cmd(mut cmd: Vec<String>) -> Cmd {
         Ok(Builtin::Echo) => cmd.builtin = Some(Builtin::Echo),
         Ok(Builtin::Cd) => cmd.builtin = Some(Builtin::Cd),
         Ok(Builtin::Pwd) => cmd.builtin = Some(Builtin::Pwd),
+        Ok(Builtin::Exit) => cmd.builtin = Some(Builtin::Exit),
         Err(_) => cmd.builtin = None,
     }
     cmd

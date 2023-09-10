@@ -1,5 +1,6 @@
 use std::env;
 use std::path::Path;
+use std::process::exit;
 
 pub fn builtin_echo(args: Vec<String>) -> () {
     //add the option to echo env_var
@@ -40,4 +41,8 @@ pub fn builtin_pwd(args: Vec<String>) {
     };
     let cwd = env::current_dir().unwrap();
     println!("{:?}", cwd);
+}
+
+pub fn builtin_exit(){
+    exit(0)
 }

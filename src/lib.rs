@@ -18,6 +18,7 @@ pub enum Builtin {
     Cd,
     Pwd,
     Echo,
+    Exit,
 }
 
 impl FromStr for Builtin {
@@ -28,6 +29,7 @@ impl FromStr for Builtin {
             "echo" => Ok(Builtin::Echo),
             "pwd" => Ok(Builtin::Pwd),
             "cd" => Ok(Builtin::Cd),
+            "exit" => Ok(Builtin::Exit),
             _ => Err(()),
         }
     }
@@ -75,6 +77,7 @@ pub fn process_cmd(cmd: Cmd, stdin: Option<Child>) -> () {
             Builtin::Cd => builtin_cd(cmd.args),
             Builtin::Pwd => builtin_pwd(cmd.args),
             Builtin::Echo => builtin_echo(cmd.args),
+            Builtin::Exit => builtin_exit(),
         },
         None => {
             match stdin {
