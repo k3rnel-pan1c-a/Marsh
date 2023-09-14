@@ -17,7 +17,7 @@ pub fn tokenize_cmd(cmd: String) -> (Vec<String>, Option<Child>) {
             .map(|cmd| parse_cmd(cmd))
             .collect();
         let last_cmd = cmds_strings.pop().unwrap();
-        (last_cmd, pipe(parsed_cmds))
+        (last_cmd, pipe(&parsed_cmds))
     } else {
         let cmd_args: Vec<String> = cmd
             .split_whitespace()

@@ -41,32 +41,31 @@ pub fn print_prompt_char() {
     io::stdout().flush().unwrap();
 }
 
-pub fn pipe(cmds: Vec<Cmd>) -> Option<Child> {
-    let mut cmds = cmds.into_iter();
+pub fn pipe(cmds: &[Cmd]) -> Option<Child> {
     let mut previous_cmd_output: Option<Child> = None;
-    while let Some(cmd) = cmds.next() {
-        let stdin = previous_cmd_output.map_or(Stdio::inherit(), |output: Child| {
-            Stdio::from(output.stdout.unwrap())
+
+    for cmd in cmds {
+        let stdin = previous_cmd_output.map_or(Stdio::inherit(), |c: Child| {
+            Stdio::from(c.stdout.unwrap())
         });
         let stdout = Stdio::piped();
-        let output = Command::new(cmd.keyword)
-            .args(cmd.args)
+        let output = Command::new(&cmd.keyword)
+            .args(&cmd.args)
             .stdin(stdin)
             .stdout(stdout)
             .spawn()
-            .expect("TODO: panic message");
+            .ok();
 
-        previous_cmd_output = Some(output);
+        previous_cmd_output = output;
     }
     previous_cmd_output
-    // cmds.next().unwrap()
 }
 
 pub fn read_cmd() -> String {
     let mut cmd: String = String::new();
     let output = io::stdin()
         .read_line(&mut cmd);
-
+    
     match output {
         Ok(_) => {}
         Err(err) => {println!("{}", err)}
