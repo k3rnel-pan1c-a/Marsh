@@ -1,7 +1,7 @@
 mod builtins;
 
 use std::io;
-use std::io::Write;
+use std::io::{Error, Write};
 use std::process::{Child, Command, Output, Stdio};
 use std::str::FromStr;
 use builtins::*;
@@ -64,10 +64,25 @@ pub fn pipe(cmds: Vec<Cmd>) -> Option<Child> {
 
 pub fn read_cmd() -> String {
     let mut cmd: String = String::new();
-    io::stdin()
-        .read_line(&mut cmd)
-        .expect("Failed to read the entered command");
+    let output = io::stdin()
+        .read_line(&mut cmd);
+
+    match output {
+        Ok(_) => {}
+        Err(err) => {println!("{}", err)}
+    }
+
     cmd
+}
+fn handle_output(result: Result<Output, Error>) {
+    match result {
+        Ok(output) => {
+            print!("{}", String::from_utf8_lossy(&output.stdout));
+        }
+        Err(err) => {
+            println!("{}", err);
+        }
+    }
 }
 
 pub fn process_cmd(cmd: Cmd, stdin: Option<Child>) -> () {
@@ -82,24 +97,17 @@ pub fn process_cmd(cmd: Cmd, stdin: Option<Child>) -> () {
         None => {
             match stdin {
                 None => {
-                    let output: Output = Command::new(cmd.keyword)
+                    let output: Result<Output, Error> = Command::new(cmd.keyword)
                         .args(cmd.args)
-                        .output()
-                        .expect("TODO");
-                    //the output method returns a vector of bytes as an output  so we use the from_utf8_lossy method
-                    //to convert to a String object
-                    print!("{}", String::from_utf8_lossy(&output.stdout));
+                        .output();
+                    handle_output(output);
                 }
                 Some(output) => {
-                    let output: Output = Command::new(cmd.keyword)
-                        // .stdin(Stdio::piped())
+                    let output: Result<Output, Error> = Command::new(cmd.keyword)
                         .stdin(output.stdout.unwrap())
                         .args(cmd.args)
-                        .output()
-                        .expect("TODO");
-                    print!("{}", String::from_utf8_lossy(&output.stdout));
-                    //the output method returns a vector of bytes as an output so we use the from_utf8_lossy method
-                    //to convert to a String object
+                        .output();
+                    handle_output(output);
                 }
             }
             io::stdout().flush().unwrap();
