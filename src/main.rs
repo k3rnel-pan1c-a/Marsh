@@ -4,11 +4,16 @@ mod tokenizer;
 
 use parser::*;
 use std::{env, path::Path};
+use std::env::VarError;
 use tokenizer::*;
 use marsh::{print_prompt_char, process_cmd, read_cmd};
 
 fn main() {
-    let home_dir: String = env::var("HOME").unwrap();
+    let home_dir = env::var("HOME");
+    match home_dir {
+        Ok(_) => {}
+        Err(_) => {println!("$HOME environment variable doesn't exist...")}
+    }
     //read the environment variables
     //need to add a fn to read a dotfile
     //cd to the root directory on start

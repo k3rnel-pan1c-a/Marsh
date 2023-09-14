@@ -42,23 +42,23 @@ pub fn print_prompt_char() {
 }
 
 pub fn pipe(cmds: &[Cmd]) -> Option<Child> {
-    let mut previous_cmd_output: Option<Child> = None;
+    let mut previous_cmd: Option<Child> = None;
 
     for cmd in cmds {
-        let stdin = previous_cmd_output.map_or(Stdio::inherit(), |c: Child| {
+        let stdin = previous_cmd.map_or(Stdio::inherit(), |c: Child| {
             Stdio::from(c.stdout.unwrap())
         });
         let stdout = Stdio::piped();
-        let output = Command::new(&cmd.keyword)
+        let child = Command::new(&cmd.keyword)
             .args(&cmd.args)
             .stdin(stdin)
             .stdout(stdout)
             .spawn()
             .ok();
 
-        previous_cmd_output = output;
+        previous_cmd = child;
     }
-    previous_cmd_output
+    previous_cmd
 }
 
 pub fn read_cmd() -> String {

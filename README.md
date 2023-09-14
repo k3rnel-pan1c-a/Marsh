@@ -1,10 +1,10 @@
 # Marsh
 Marsh is a rust-based shell
 
-## Todo:
+## TODO:
 
 - [x] Piping
-- [ ] Error handling
+- [x] Error handling
 - [ ] Globbing
 - [ ] Basic auto-completion
 - [ ] Quoting and backslash escaping
