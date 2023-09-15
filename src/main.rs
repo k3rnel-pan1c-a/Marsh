@@ -14,9 +14,11 @@ fn main() {
     match home_dir{
         Ok(dir) => {
             let root = Path::new(&dir);
-            env::set_current_dir(&root).expect("$HOME environment variable doesn't exist...");
+            env::set_current_dir(&root).expect(&format!("changing current directory to {dir} failed."));
         }
-        Err(_) => {}
+        Err(_) => {
+            println!("$HOME environment variable doesn't exist.")
+        }
     }
     //read the environment variables
     //need to add a fn to read a dotfile
