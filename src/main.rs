@@ -10,15 +10,17 @@ use marsh::{print_prompt_char, process_cmd, read_cmd};
 
 fn main() {
     let home_dir = env::var("HOME");
-    match home_dir {
-        Ok(_) => {}
-        Err(_) => {println!("$HOME environment variable doesn't exist...")}
+
+    match home_dir{
+        Ok(dir) => {
+            let root = Path::new(&dir);
+            env::set_current_dir(&root).expect("$HOME environment variable doesn't exist...");
+        }
+        Err(_) => {}
     }
     //read the environment variables
     //need to add a fn to read a dotfile
     //cd to the root directory on start
-    let root = Path::new(home_dir.as_str());
-    env::set_current_dir(&root).expect(format!("{home_dir} doesn't exist").as_str());
 
     //since shells are REPL, then we'll have an infinite loop
     loop {
