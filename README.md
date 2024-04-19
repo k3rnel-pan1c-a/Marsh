@@ -1,5 +1,5 @@
 # Marsh
-Marsh is a rust-based shell
+Marsh is a non-POSIX compliant shell written in rust
 
 ## TODO:
 
